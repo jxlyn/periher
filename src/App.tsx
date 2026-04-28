@@ -822,9 +822,9 @@ const LandingPage = ({ onStart, onAuth }: { onStart: () => void, onAuth: (view: 
         >
           <button 
             onClick={onStart}
-            className="w-full py-5 bg-slate-900 text-white rounded-[1.8rem] font-medium text-lg shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+            className="w-full py-5 bg-lavender-500 text-white rounded-[1.8rem] font-medium text-lg shadow-xl shadow-lavender-200 hover:bg-lavender-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
           >
-            Start Your Journey
+            See sample
             <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>
@@ -2082,30 +2082,30 @@ export default function App() {
         };
 
         // 3. Upsert into Supabase
-        const { error, status, statusText } = await supabase
+        const response = await supabase
           .from('symptom_logs')
           .upsert(dbLog, { onConflict: 'user_id,log_date' });
         
-        if (error) {
+        if (response.error) {
           console.error('Supabase DB Error:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-            status,
-            statusText
+            message: response.error.message,
+            details: response.error.details,
+            hint: response.error.hint,
+            code: response.error.code,
+            status: response.status,
+            statusText: response.statusText
           });
-          throw error;
+          throw response.error;
         }
         
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (err: any) {
-        console.error('Error saving log to Supabase:', err);
+        console.error('Detailed Save Error:', err);
         setSaveStatus('error');
-        // Check for RLS errors specifically
-        if (err.message?.includes('policy')) {
-          console.warn("RLS Policy missing: Ensure you have an 'Enable Insert/Update for users' policy on symptom_logs table in Supabase.");
+        // Check for common Supabase/RLS issues
+        if (err.message?.includes('policy') || err.code === '42501') {
+          console.warn("RLS Policy Check: Go to Supabase > Authentication > Policies and ensure you have an 'INSERT/UPDATE' policy for authenticated users on the symptom_logs table.");
         }
       }
     } else {
