@@ -12,7 +12,7 @@ import {
   Wind, 
   Coffee, 
   Activity,
-  User,
+  User as UserIcon,
   Send,
   Sparkles,
   CheckCircle2,
@@ -51,6 +51,8 @@ import {
 import { cn } from './lib/utils';
 import { getPeriHerResponse } from './services/gemini';
 import { GoogleGenAI } from "@google/genai";
+import { supabase } from './lib/supabase';
+import { User, Session } from '@supabase/supabase-js';
 import { Symptom, PlanItem, DailyPlan, Insight, Achievement, Message, UserPreferences, DailyLog, AvatarState } from './types';
 
 // --- Mock Data ---
@@ -528,7 +530,7 @@ const DailyLogging = ({ onLog }: { onLog: (log: Partial<DailyLog>) => void }) =>
   );
 };
 
-const LandingPage = ({ onStart }: { onStart: () => void }) => {
+const LandingPage = ({ onStart, onAuth }: { onStart: () => void, onAuth: (view: 'login' | 'signup') => void }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     container: containerRef
@@ -787,7 +789,23 @@ const LandingPage = ({ onStart }: { onStart: () => void }) => {
       <div className="relative z-10 px-8 py-20 text-center snap-start">
         <h2 className="serif text-3xl font-medium text-slate-800 mb-4">Ready to feel <br />like yourself again?</h2>
         <p className="text-slate-500 text-sm font-light mb-8">Join thousands of women navigating perimenopause with confidence.</p>
-        <div className="w-16 h-16 bg-lavender-100 rounded-full flex items-center justify-center mx-auto mb-8">
+        
+        <div className="space-y-4 max-w-[280px] mx-auto">
+          <button 
+            onClick={() => onAuth('signup')}
+            className="w-full py-5 bg-lavender-500 text-white rounded-[2rem] font-bold text-sm uppercase tracking-widest soft-shadow hover:bg-lavender-600 transition-all active:scale-95 pointer-events-auto"
+          >
+            Create My Plan
+          </button>
+          <button 
+            onClick={() => onAuth('login')}
+            className="w-full py-5 bg-white text-lavender-500 border border-lavender-100 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:bg-lavender-50 transition-all active:scale-95 pointer-events-auto"
+          >
+            I Have an Account
+          </button>
+        </div>
+
+        <div className="mt-12 w-16 h-16 bg-lavender-100 rounded-full flex items-center justify-center mx-auto mb-8">
           <Heart size={24} className="text-lavender-500 fill-lavender-500/20" />
         </div>
       </div>
@@ -850,7 +868,7 @@ const ParallaxSection = ({ feature, index }: { feature: any, index: number }) =>
   );
 };
 
-const HomeScreen = ({ onSymptomSelect, onPlanItemClick, preferences, setPreferences, onLog }: { onSymptomSelect: (s: Symptom) => void, onPlanItemClick: (item: any) => void, preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, onLog: (log: Partial<DailyLog>) => void }) => {
+const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, preferences, setPreferences, onLog, onLogout }: { userName: string, saveStatus: string, onSymptomSelect: (s: Symptom) => void, onPlanItemClick: (item: any) => void, preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, onLog: (log: Partial<DailyLog>) => void, onLogout: () => void }) => {
   const [selectedSymptom, setSelectedSymptom] = useState<Symptom | null>(null);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -909,10 +927,34 @@ const HomeScreen = ({ onSymptomSelect, onPlanItemClick, preferences, setPreferen
     <div className="space-y-8 pb-32">
       <header className="pt-12 px-8 flex justify-between items-center">
         <div className="animate-fade-in">
-          <h2 className="serif text-4xl font-light text-slate-900 leading-tight">Good morning, <br /><span className="italic text-lavender-500">Amber.</span></h2>
+          <h2 className="serif text-4xl font-light text-slate-900 leading-tight">Good morning, <br /><span className="italic text-lavender-500">{userName}.</span></h2>
           <p className="text-slate-400 mt-2 font-light">Your journey is unique.</p>
         </div>
-        <Avatar state={preferences.avatar} size="sm" mood={mood} trigger={trigger} />
+        <div className="flex flex-col items-center gap-2">
+          <Avatar state={preferences.avatar} size="sm" mood={mood} trigger={trigger} />
+          {saveStatus !== 'idle' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={cn(
+                "text-[7px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-full flex items-center gap-1",
+                saveStatus === 'saving' && "bg-slate-100 text-slate-400",
+                saveStatus === 'saved' && "bg-emerald-50 text-emerald-500",
+                saveStatus === 'error' && "bg-rose-50 text-rose-500"
+              )}
+            >
+              {saveStatus === 'saving' && <div className="w-1 h-1 bg-slate-300 rounded-full animate-pulse" />}
+              {saveStatus === 'saved' && <CheckCircle2 size={8} />}
+              {saveStatus}
+            </motion.div>
+          )}
+          <button 
+            onClick={onLogout}
+            className="text-[8px] font-bold uppercase tracking-widest text-slate-300 hover:text-rose-400 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
       </header>
 
       <div className="px-8 space-y-8">
@@ -1444,7 +1486,7 @@ const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, se
               )}
             >
               {cat === 'achievements' && <Award size={18} />}
-              {cat === 'avatar' && <User size={18} />}
+              {cat === 'avatar' && <UserIcon size={18} />}
               {cat === 'rewards' && <ShoppingBag size={18} />}
             </button>
           ))}
@@ -1745,10 +1787,194 @@ const AskPeriHerScreen = () => {
   );
 };
 
+// --- Auth Screen ---
+
+const AuthScreen = ({ initialView, onClose }: { initialView: 'login' | 'signup', onClose: () => void }) => {
+  const [view, setView] = useState<'login' | 'signup'>(initialView);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (view === 'login') {
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (loginError) throw loginError;
+      } else {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: displayName || 'Amber', // Defaulting to Amber if empty
+            }
+          }
+        });
+        if (signUpError) throw signUpError;
+        setIsSuccess(true);
+      }
+    } catch (err: any) {
+      console.error('Auth Error:', err);
+      if (err.message?.toLowerCase().includes('rate limit')) {
+        setError("Rate limit exceeded. Please wait a moment or disable 'Confirm Email' in your Supabase Auth settings to bypass this during testing.");
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="w-full max-w-sm bg-white rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden"
+        >
+          <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-emerald-50 rounded-full blur-2xl" />
+          
+          <div className="text-center py-6">
+            <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-emerald-100">
+              <CheckCircle2 size={32} />
+            </div>
+            
+            <h2 className="serif text-3xl font-medium text-slate-800 mb-4">Check your email</h2>
+            <p className="text-slate-500 text-sm leading-relaxed mb-8">
+              We've sent a magic link to <span className="font-bold text-slate-900">{email}</span>. 
+              Please click it to confirm your account and start your journey.
+            </p>
+            
+            <button 
+              onClick={onClose}
+              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="w-full max-w-sm bg-white rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden"
+      >
+        {/* Background Sparkles */}
+        <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-lavender-100/50 rounded-full blur-2xl" />
+        
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400"
+        >
+          <Plus className="rotate-45" size={24} />
+        </button>
+
+        <div className="text-center mb-8 pt-4">
+          <div className="w-16 h-16 bg-lavender-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-lavender-200">
+            <Lock size={28} />
+          </div>
+          <h2 className="serif text-3xl font-medium text-slate-800">
+            {view === 'login' ? 'Welcome Back' : 'Join PeriHer'}
+          </h2>
+          <p className="text-slate-400 text-sm mt-2">
+            {view === 'login' ? 'Sign in to your account' : 'Start your personalized journey'}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {view === 'signup' && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">What should we call you?</label>
+              <input 
+                type="text" 
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm focus:outline-none focus:border-lavender-300 focus:bg-white transition-all"
+              />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="hello@example.com"
+              className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm focus:outline-none focus:border-lavender-300 focus:bg-white transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm focus:outline-none focus:border-lavender-300 focus:bg-white transition-all"
+            />
+          </div>
+
+          {error && (
+            <motion.p 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="text-[11px] text-rose-500 font-medium px-1"
+            >
+              {error}
+            </motion.p>
+          )}
+
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all disabled:opacity-50 mt-4"
+          >
+            {isLoading ? 'Processing...' : view === 'login' ? 'Login' : 'Sign Up'}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-xs text-slate-400">
+            {view === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
+            <button 
+              onClick={() => setView(view === 'login' ? 'signup' : 'login')}
+              className="text-lavender-600 font-bold hover:underline"
+            >
+              {view === 'login' ? 'Sign up' : 'Login'}
+            </button>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [session, setSession] = useState<Session | null>(null);
   const [isStarted, setIsStarted] = useState(false);
+  const [authView, setAuthView] = useState<'login' | 'signup' | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'progress' | 'ask'>('home');
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [logs, setLogs] = useState<DailyLog[]>([]);
@@ -1764,7 +1990,61 @@ export default function App() {
     }
   });
 
-  const handleLog = (log: Partial<DailyLog>) => {
+  useEffect(() => {
+    const initSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      if (session) {
+        setIsStarted(true);
+        fetchHistoricalLogs(session.user.id);
+      }
+    };
+
+    initSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        setIsStarted(true);
+        setAuthView(null);
+        fetchHistoricalLogs(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchHistoricalLogs = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('symptom_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .order('log_date', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const mappedLogs: DailyLog[] = data.map((item: any) => ({
+          id: item.id || item.created_at,
+          date: item.log_date,
+          timestamp: new Date(item.log_date).getTime(),
+          symptom: item.symptom?.type || item.symptom,
+          mood: item.mood_score?.toString(),
+          exercise: item.activity_log ? JSON.parse(item.activity_log) : undefined,
+          nutrition: item.diet_log ? JSON.parse(item.diet_log) : undefined,
+        }));
+        setLogs(mappedLogs);
+      }
+    } catch (err) {
+      console.error('Error fetching logs:', err);
+    }
+  };
+
+  const handleLog = async (log: Partial<DailyLog>) => {
+    setSaveStatus('saving');
     const newLog: DailyLog = {
       id: Date.now().toString(),
       date: new Date().toISOString(),
@@ -1774,6 +2054,64 @@ export default function App() {
     setLogs(prev => [newLog, ...prev]);
     setTrigger(prev => prev + 1);
     
+    // Save to Supabase if session exists
+    if (session?.user) {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 1. Fetch today's existing log to merge
+        const { data: existingData } = await supabase
+          .from('symptom_logs')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('log_date', today)
+          .single();
+
+        // 2. Prepare the payload (merging with existing if found)
+        const dbLog = {
+          user_id: session.user.id,
+          log_date: today,
+          // symptom is NOT NULL in your schema, so we MUST provide at least an empty object
+          symptom: log.symptom ? { type: log.symptom } : (existingData?.symptom || {}), 
+          severity: 1, 
+          diet_log: log.nutrition ? JSON.stringify(log.nutrition) : (existingData?.diet_log || null),
+          activity_log: log.exercise ? JSON.stringify(log.exercise) : (existingData?.activity_log || null),
+          mood_score: log.mood ? parseInt(log.mood) || 5 : (existingData?.mood_score || 5),
+          energy_score: 5,
+          created_at: existingData?.created_at || new Date().toISOString(),
+        };
+
+        // 3. Upsert into Supabase
+        const { error, status, statusText } = await supabase
+          .from('symptom_logs')
+          .upsert(dbLog, { onConflict: 'user_id,log_date' });
+        
+        if (error) {
+          console.error('Supabase DB Error:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            status,
+            statusText
+          });
+          throw error;
+        }
+        
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (err: any) {
+        console.error('Error saving log to Supabase:', err);
+        setSaveStatus('error');
+        // Check for RLS errors specifically
+        if (err.message?.includes('policy')) {
+          console.warn("RLS Policy missing: Ensure you have an 'Enable Insert/Update for users' policy on symptom_logs table in Supabase.");
+        }
+      }
+    } else {
+      setSaveStatus('idle');
+    }
+
     // Simple achievement progress logic
     setAchievements(prev => prev.map(a => {
       if (a.id === '1' && log.exercise) {
@@ -1785,8 +2123,21 @@ export default function App() {
   };
 
   if (!isStarted) {
-    return <LandingPage onStart={() => setIsStarted(true)} />;
+    return (
+      <>
+        <LandingPage 
+          onStart={() => setIsStarted(true)} 
+          onAuth={(view) => setAuthView(view)} 
+        />
+        {authView && <AuthScreen initialView={authView} onClose={() => setAuthView(null)} />}
+      </>
+    );
   }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsStarted(false);
+  };
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-warm-50 relative overflow-x-hidden">
@@ -1808,6 +2159,8 @@ export default function App() {
           >
             {activeTab === 'home' && (
               <HomeScreen 
+                userName={session?.user?.user_metadata?.display_name || 'Amber'}
+                saveStatus={saveStatus}
                 onSymptomSelect={(s) => {
                   setHasCheckedIn(true);
                   handleLog({ symptom: s });
@@ -1816,6 +2169,7 @@ export default function App() {
                 preferences={preferences}
                 setPreferences={setPreferences}
                 onLog={handleLog}
+                onLogout={handleLogout}
               />
             )}
             {activeTab === 'plan' && <PlanAndInsightsScreen logs={logs} />}
