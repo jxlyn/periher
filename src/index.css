@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lavender-50: #fbfaff;
+  --color-lavender-100: #f3f0ff;
+  --color-lavender-200: #e9e4ff;
+  --color-lavender-300: #d9d1ff;
+  --color-lavender-400: #c4b5fd;
+  --color-lavender-500: #a78bfa;
+  --color-lavender-600: #8b5cf6;
+  
+  --color-rose-50: #fffafb;
+  --color-rose-100: #fef2f4;
+  --color-rose-200: #fce7eb;
+  --color-rose-500: #f43f5e;
+
+  --color-sage-50: #f8faf8;
+  --color-sage-100: #f0f4f0;
+  --color-sage-500: #a3b1a3;
+
+  --color-warm-50: #fffcf9;
+  --color-warm-100: #fdf8f3;
+  --color-warm-200: #f7ede2;
+  --color-warm-300: #eeddc3;
+  
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  @apply bg-warm-50 text-slate-700 font-sans antialiased;
+}
+
+.serif {
+  @apply font-serif;
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-white/20;
+}
+
+.glass-noise {
+  @apply bg-white/40 backdrop-blur-2xl border border-white/30 relative overflow-hidden;
+}
+
+.glass-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.soft-shadow {
+  box-shadow: 0 10px 30px -10px rgba(147, 112, 219, 0.1);
+}
+
+.elegant-gradient {
+  background: linear-gradient(135deg, #fbfaff 0%, #fdf8f3 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-lavender-200/50 rounded-full;
+}
+
+/* Entrance animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
