@@ -44,14 +44,14 @@ export interface DailyLog {
     type: string;
     duration: number;
     intensity: 'low' | 'medium' | 'high';
-  };
+  }[];
   nutrition?: {
     meal: string;
     tags: string[];
     image?: string;
     aiAnalysis?: string;
     weight?: string;
-  };
+  }[];
   symptom?: Symptom;
   mood?: string;
 }

@@ -32,6 +32,8 @@ import {
   Lock,
   ShieldCheck,
   Camera,
+  ArrowLeft,
+  Apple,
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { 
@@ -56,35 +58,104 @@ import { User, Session } from '@supabase/supabase-js';
 import { Symptom, PlanItem, DailyPlan, Insight, Achievement, Message, UserPreferences, DailyLog, AvatarState } from './types';
 
 // --- Mock Data ---
-const WEEKLY_PLAN: PlanItem[] = [
-  { id: '1', type: 'exercise', title: '20-minute Strength Training', description: 'Focus on core and bone health.', productRecommendation: { name: 'Resistance Band Set', image: 'https://picsum.photos/seed/bands/200/200', link: '#' } },
-  { id: '2', type: 'nutrition', title: 'High-Protein Breakfast', description: 'Greek yogurt with berries and flaxseeds.', productRecommendation: { name: 'Plant-based Protein', image: 'https://picsum.photos/seed/protein/200/200', link: '#' } },
-  { id: '3', type: 'lifestyle', title: 'Sleep Routine', description: 'No screens 30 mins before bed. Lavender mist.' },
-  { id: '4', type: 'exercise', title: '30-minute Brisk Walk', description: 'Get some fresh air and vitamin D.' },
-  { id: '5', type: 'nutrition', title: 'Magnesium-Rich Dinner', description: 'Spinach, pumpkin seeds, and salmon.' },
+const WEEKLY_PLAN: any[] = [
+  { 
+    id: '1', 
+    type: 'exercise', 
+    title: '20-minute Strength Training', 
+    description: 'Targeted strength training to boost metabolism and maintain bone density during perimenopause.', 
+    color: 'bg-sage-50',
+    text: 'text-sage-500',
+    icon: Dumbbell,
+    productRecommendation: { name: 'Resistance Band Set', image: 'https://picsum.photos/seed/bands/200/200', link: '#' },
+    workoutSteps: [
+      'Warm up: 5 mins of brisk walking or arm circles.',
+      'Banded Squats: 3 sets of 15 reps.',
+      'Banded Rows: 3 sets of 12 reps.',
+      'Banded Chest Press: 3 sets of 12 reps.',
+      'Stretching: 5 mins focusing on large muscle groups.'
+    ],
+    tutorialLink: 'https://www.youtube.com/results?search_query=strength+training+for+perimenopause'
+  },
+  { 
+    id: '2', 
+    type: 'nutrition', 
+    title: 'High-Protein Breakfast', 
+    description: 'Greek yogurt with berries and flaxseeds. Supports stable energy and muscle maintenance.', 
+    color: 'bg-rose-50',
+    text: 'text-rose-500',
+    icon: Apple,
+    productRecommendation: { name: 'Plant-based Protein', image: 'https://picsum.photos/seed/protein/200/200', link: '#' },
+    ingredients: ['1 cup Greek Yogurt (unsweetened)', '1/2 cup Mixed Berries', '2 tbsp Ground Flaxseeds', '1 tbsp Almond Slivers', 'Drizzle of honey (optional)'],
+    recipeSteps: [
+      'Scoop yogurt into a serving bowl.',
+      'Wash and dry berries, then place on top of yogurt.',
+      'Sprinkle flaxseeds and almonds evenly.',
+      'Mix slightly or layers for texture.',
+      'Enjoy immediately with a glass of water.'
+    ]
+  },
+  { 
+    id: '3', 
+    type: 'lifestyle', 
+    title: 'Sleep Routine', 
+    description: 'No screens 30 mins before bed. Lavender mist. Essential for hormone regulation.',
+    color: 'bg-blue-50',
+    text: 'text-blue-500',
+    icon: Wind,
+    workoutSteps: [
+      'Set a "digital sunset" alarm for 9 PM.',
+      'Dim the lights in the living area.',
+      'Gentle stretching for 5 minutes.',
+      'Spray lavender mist on pillow.',
+      'Read 10 pages of a physical book.'
+    ]
+  },
+  { 
+    id: '4', 
+    type: 'exercise', 
+    title: '30-minute Brisk Walk', 
+    description: 'Get some fresh air and vitamin D. Helps regulate circadian rhythm and mood.',
+    color: 'bg-sage-50',
+    text: 'text-sage-500',
+    icon: Dumbbell,
+    workoutSteps: [
+      'Shoes on and head outside.',
+      'First 5 mins: Moderate pace.',
+      'Next 20 mins: Brisk pace (able to talk but not sing).',
+      'Final 5 mins: Slow down to cool down.',
+      'Deep breaths: 2 mins of rhythmic breathing.'
+    ],
+    tutorialLink: 'https://www.youtube.com/results?search_query=benefits+of+walking+menopause'
+  },
+  { 
+    id: '5', 
+    type: 'nutrition', 
+    title: 'Magnesium-Rich Dinner', 
+    description: 'Spinach, pumpkin seeds, and salmon. Eases muscle tension and promotes deep sleep.',
+    color: 'bg-rose-50',
+    text: 'text-rose-500',
+    icon: Apple,
+    ingredients: ['1 Salmon fillet', '2 cups baby spinach', '1/4 cup pumpkin seeds', 'Lemon juice', 'Sea salt'],
+    recipeSteps: [
+      'Bake salmon at 400°F (200°C) for 12-15 mins.',
+      'Steam spinach for 2 mins until bright green.',
+      'Toast pumpkin seeds until golden.',
+      'Assemble salmon on a bed of spinach.',
+      'Top with seeds and a squeeze of fresh lemon.'
+    ]
+  },
 ];
 
-const INSIGHTS: Insight[] = [
-  { id: '1', text: "I noticed your sleep improves on days you walk.", type: 'positive' },
-  { id: '2', text: "Your energy levels drop after nights with less than 6 hours of sleep.", type: 'observation' },
-  { id: '3', text: "Brain fog symptoms are 30% lower when you hit your protein goals.", type: 'positive' },
-];
+const INSIGHTS: Insight[] = [];
 
 const ACHIEVEMENTS: Achievement[] = [
-  { id: '1', title: 'Symptom Streak', description: '5-day symptom tracking streak', icon: '🔥', progress: 5, target: 7, completed: false },
-  { id: '2', title: 'Workout Warrior', description: '3 workouts completed this week', icon: '💪', progress: 3, target: 3, completed: true },
-  { id: '3', title: 'Sleep Milestone', description: 'Average 7.5h sleep this week', icon: '🌙', progress: 7.5, target: 8, completed: false },
+  { id: '1', title: 'Symptom Streak', description: 'Complete your first day of symptom tracking', icon: '🔥', progress: 0, target: 7, completed: false },
+  { id: '2', title: 'Workout Warrior', description: 'Complete 3 workouts per week', icon: '💪', progress: 0, target: 3, completed: false },
+  { id: '3', title: 'Sleep Milestone', description: 'Average 7.5h sleep this week', icon: '🌙', progress: 0, target: 8, completed: false },
 ];
 
-const CHART_DATA = [
-  { day: 'Mon', sleep: 6.5, mood: 3, energy: 4 },
-  { day: 'Tue', sleep: 7.2, mood: 4, energy: 5 },
-  { day: 'Wed', sleep: 5.8, mood: 2, energy: 3 },
-  { day: 'Thu', sleep: 8.0, mood: 5, energy: 6 },
-  { day: 'Fri', sleep: 7.5, mood: 4, energy: 5 },
-  { day: 'Sat', sleep: 7.8, mood: 5, energy: 7 },
-  { day: 'Sun', sleep: 7.0, mood: 4, energy: 5 },
-];
+const CHART_DATA: any[] = [];
 
 // --- Components ---
 
@@ -209,10 +280,11 @@ const NavItem = ({ icon: Icon, label, active, onClick }: { icon: any, label: str
   </button>
 );
 
-const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+const Card = ({ children, className, onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) => (
   <motion.div 
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
+    onClick={onClick}
     className={cn("bg-white rounded-3xl p-5 shadow-sm border border-warm-200", className)}
   >
     {children}
@@ -279,12 +351,12 @@ const DailyLogging = ({ onLog }: { onLog: (log: Partial<DailyLog>) => void }) =>
   };
 
   const handleExerciseSubmit = () => {
-    onLog({ exercise });
+    onLog({ exercise: [exercise] });
     setStep('type');
   };
 
   const handleNutritionSubmit = () => {
-    onLog({ nutrition });
+    onLog({ nutrition: [nutrition] });
     setStep('type');
   };
 
@@ -868,7 +940,7 @@ const ParallaxSection = ({ feature, index }: { feature: any, index: number }) =>
   );
 };
 
-const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, preferences, setPreferences, onLog, onLogout }: { userName: string, saveStatus: string, onSymptomSelect: (s: Symptom) => void, onPlanItemClick: (item: any) => void, preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, onLog: (log: Partial<DailyLog>) => void, onLogout: () => void }) => {
+const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, preferences, setPreferences, onLog, onLogout, customPlan }: { userName: string, saveStatus: string, onSymptomSelect: (s: Symptom) => void, onPlanItemClick: (item: any) => void, preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, onLog: (log: Partial<DailyLog>) => void, onLogout: () => void, customPlan: any[] }) => {
   const [selectedSymptom, setSelectedSymptom] = useState<Symptom | null>(null);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -895,9 +967,7 @@ const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, pr
     { type: 'lifestyle', title: '20-minute guided meditation', description: 'A calming practice focused on body awareness. Helps manage stress and brain fog by grounding your attention.', icon: Wind, color: 'bg-blue-50', text: 'text-blue-400' },
   ];
 
-  const [selectedPlanItem, setSelectedPlanItem] = useState<any | null>(null);
-
-  const currentPlan = (selectedSymptom && preferences.autoAdaptPlan) ? adaptedPlan : defaultPlan;
+  const currentPlan = customPlan;
 
   const handleLog = async (log: Partial<DailyLog>) => {
     setTrigger(prev => prev + 1);
@@ -907,8 +977,8 @@ const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, pr
     try {
       const logType = log.exercise ? 'exercise' : 'nutrition';
       const logDetail = log.exercise 
-        ? `${log.exercise.duration}min of ${log.exercise.type} at ${log.exercise.intensity} intensity`
-        : `${log.nutrition?.meal} (${log.nutrition?.tags.join(', ')})`;
+        ? `${log.exercise[0].duration}min of ${log.exercise[0].type} at ${log.exercise[0].intensity} intensity`
+        : `${log.nutrition?.[0].meal} (${log.nutrition?.[0].tags.join(', ')})`;
       
       const prompt = `The user just logged a ${logType}: ${logDetail}. They are currently feeling ${selectedSymptom || 'okay'}. 
       Give them a short, empathetic, and supportive response (max 2 sentences). 
@@ -950,7 +1020,7 @@ const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, pr
           )}
           <button 
             onClick={onLogout}
-            className="text-[8px] font-bold uppercase tracking-widest text-slate-300 hover:text-rose-400 transition-colors"
+            className="relative z-[60] cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all py-2 px-4 bg-slate-100/80 rounded-xl shadow-sm active:scale-95 border border-slate-200/50"
           >
             Sign Out
           </button>
@@ -1034,7 +1104,7 @@ const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, pr
       <div className="px-8 space-y-4">
         <div className="flex items-center justify-between px-2">
           <h3 className="serif text-2xl font-medium text-slate-800">Today's Plan</h3>
-          <span className="text-[10px] font-bold text-lavender-400 uppercase tracking-[0.2em]">March 17</span>
+          <span className="text-[10px] font-bold text-lavender-400 uppercase tracking-[0.2em]">{new Date().toLocaleString('default', { month: 'long' })} {new Date().getDate()}</span>
         </div>
 
         <div className="space-y-4">
@@ -1044,114 +1114,27 @@ const HomeScreen = ({ userName, saveStatus, onSymptomSelect, onPlanItemClick, pr
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + (idx * 0.1) }}
-              onClick={() => setSelectedPlanItem(item)}
-              className="flex items-center gap-5 p-5 bg-white rounded-[2rem] border border-warm-200 soft-shadow group hover:border-lavender-200 transition-all cursor-pointer active:scale-95"
+              onClick={() => onPlanItemClick(item)}
+              className="flex items-center gap-4 p-5 bg-white rounded-3xl border border-slate-100 soft-shadow group hover:border-lavender-200 transition-all cursor-pointer active:scale-95"
             >
-              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", item.color, item.text)}>
-                <item.icon size={24} />
+              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", item.color, item.text)}>
+                <item.icon size={22} />
               </div>
               <div className="flex-1">
-                <p className={cn("text-[10px] font-bold uppercase tracking-[0.2em] mb-1", item.text)}>{item.type}</p>
-                <p className="font-medium text-slate-800">{item.title}</p>
+                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-0.5">{item.type}</p>
+                <h4 className="font-medium text-slate-700">{item.title}</h4>
               </div>
-              <div className="w-8 h-8 rounded-full bg-warm-50 flex items-center justify-center text-slate-300">
-                <ChevronRight size={16} />
-              </div>
+              <ChevronRight size={16} className="text-slate-200 group-hover:text-lavender-300 transition-colors" />
             </motion.div>
           ))}
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedPlanItem && (
-          <motion.div 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-[100] bg-warm-50 overflow-y-auto"
-          >
-            <div className="relative min-h-screen">
-              {/* Header with Close Button */}
-              <div className="sticky top-0 z-20 bg-warm-50/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-warm-100">
-                <button 
-                  onClick={() => setSelectedPlanItem(null)}
-                  className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors soft-shadow"
-                >
-                  <ChevronRight size={20} className="rotate-180" />
-                </button>
-                <div className="text-center">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-lavender-400">Daily Detail</p>
-                  <h3 className="serif text-xl font-medium text-slate-800">Your Full Plan</h3>
-                </div>
-                <div className="w-10" /> {/* Spacer */}
-              </div>
-
-              {/* Reusing Plan Content Style */}
-              <div className="p-8 space-y-12 pb-24">
-                <section className="bg-white rounded-[3rem] p-8 soft-shadow border border-warm-100">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", selectedPlanItem.color, selectedPlanItem.text)}>
-                      <selectedPlanItem.icon size={28} />
-                    </div>
-                    <div>
-                      <p className={cn("text-[10px] font-bold uppercase tracking-[0.2em] mb-1", selectedPlanItem.text)}>{selectedPlanItem.type}</p>
-                      <h4 className="serif text-2xl font-medium text-slate-800">{selectedPlanItem.title}</h4>
-                    </div>
-                  </div>
-                  <p className="text-slate-500 leading-relaxed font-light mb-8">
-                    {selectedPlanItem.description}
-                  </p>
-                  
-                  <div className="p-6 bg-warm-50 rounded-[2rem] border border-warm-100">
-                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Why this works today:</h5>
-                    <p className="text-sm text-slate-600 font-light leading-relaxed">
-                      Based on your current cycle phase and reported symptoms, this activity is optimized to support your hormonal balance and energy levels.
-                    </p>
-                  </div>
-                </section>
-
-                {/* The rest of the plan content (simplified or full) */}
-                <div className="space-y-8">
-                  <div className="flex items-center justify-between px-2">
-                    <h3 className="serif text-2xl font-medium text-slate-800">Other Recommendations</h3>
-                    <span className="text-[10px] font-bold text-lavender-400 uppercase tracking-[0.2em]">Full List</span>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {WEEKLY_PLAN.filter(i => i.id !== selectedPlanItem.id).slice(0, 3).map(item => (
-                      <div key={item.id} className="bg-white p-6 rounded-[2rem] soft-shadow border border-warm-100 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-warm-50 flex items-center justify-center text-slate-400">
-                          <CheckCircle2 size={20} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">{item.type}</p>
-                          <p className="font-medium text-slate-700">{item.title}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => {
-                    setSelectedPlanItem(null);
-                    onPlanItemClick(selectedPlanItem);
-                  }}
-                  className="w-full bg-slate-900 text-white py-5 rounded-2xl font-medium soft-shadow hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
-                >
-                  Go to Plan Tab <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
 
-const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
+const PlanAndInsightsScreen = ({ logs, customPlan, onSelectItem }: { logs: DailyLog[], customPlan: any[], onSelectItem: (item: any) => void }) => {
   const [view, setView] = useState<'plan' | 'insights'>('plan');
   const [planMode, setPlanMode] = useState<'list' | 'calendar'>('list');
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
@@ -1159,14 +1142,15 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   const getLogsForDay = (day: number) => {
-    // In a real app, we'd check the actual date. For this demo, we'll mock it.
-    // We'll assume the logs are for March 2026.
-    return logs.filter(log => {
-      const logDate = new Date(log.timestamp);
-      return logDate.getDate() === day;
-    });
+    const year = new Date().getFullYear();
+    const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const dayStr = day.toString().padStart(2, '0');
+    const dateToMatch = `${year}-${month}-${dayStr}`;
+    return logs.filter(log => log.date === dateToMatch);
   };
 
+  const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+  const currentDayNum = new Date().getDate();
   const selectedDayLogs = getLogsForDay(selectedDate);
 
   return (
@@ -1174,7 +1158,7 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
       <header className="flex justify-between items-center">
         <div>
           <h2 className="serif text-4xl font-light text-slate-900">{view === 'plan' ? 'Your Plan' : 'Insights'}</h2>
-          <p className="text-slate-400 mt-2 font-light">{view === 'plan' ? 'Curated for your cycle.' : 'Patterns in your wellness.'}</p>
+          <p className="text-slate-400 mt-2 font-light">{view === 'plan' ? `Curated for ${currentMonth} ${currentDayNum}.` : 'Patterns in your wellness.'}</p>
         </div>
         <div className="flex bg-white p-1.5 rounded-2xl border border-warm-200 soft-shadow">
           <button 
@@ -1218,28 +1202,22 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                 </div>
                 <div className="space-y-4">
                   {WEEKLY_PLAN.filter(i => i.type === 'exercise').map(item => (
-                    <Card key={item.id} className="p-6 rounded-[2rem] soft-shadow border-warm-100">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h4 className="font-semibold text-slate-800 text-lg">{item.title}</h4>
-                          <p className="text-sm text-slate-400 mt-1 font-light">{item.description}</p>
+                    <Card 
+                      key={item.id} 
+                      className="p-5 rounded-3xl border-slate-100 soft-shadow cursor-pointer active:scale-[0.98] transition-transform group"
+                      onClick={() => onSelectItem({ ...item, color: 'bg-sage-50', text: 'text-sage-500', icon: Dumbbell })}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-sage-50 text-sage-500 flex items-center justify-center transition-colors">
+                          <Dumbbell size={22} />
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-sage-50 text-sage-500 flex items-center justify-center">
-                          <CheckCircle2 size={20} />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-slate-700">{item.title}</h4>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-200 flex items-center justify-center">
+                          <ChevronRight size={16} />
                         </div>
                       </div>
-                      {item.productRecommendation && (
-                        <div className="mt-6 p-4 bg-warm-50 rounded-2xl flex items-center gap-4 border border-warm-100 group cursor-pointer hover:bg-white transition-colors">
-                          <div className="w-14 h-14 rounded-xl overflow-hidden border border-warm-200">
-                            <img src={item.productRecommendation.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-[9px] font-bold text-lavender-400 uppercase tracking-[0.2em] mb-1">Recommended</p>
-                            <p className="text-sm font-medium text-slate-700">{item.productRecommendation.name}</p>
-                          </div>
-                          <ShoppingBag size={18} className="text-slate-300 group-hover:text-lavender-400 transition-colors" />
-                        </div>
-                      )}
                     </Card>
                   ))}
                 </div>
@@ -1252,9 +1230,22 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                 </div>
                 <div className="space-y-4">
                   {WEEKLY_PLAN.filter(i => i.type === 'nutrition').map(item => (
-                    <Card key={item.id} className="p-6 rounded-[2rem] soft-shadow border-warm-100">
-                      <h4 className="font-semibold text-slate-800 text-lg">{item.title}</h4>
-                      <p className="text-sm text-slate-400 mt-1 font-light">{item.description}</p>
+                    <Card 
+                      key={item.id} 
+                      className="p-5 rounded-3xl border-slate-100 soft-shadow cursor-pointer active:scale-[0.98] transition-transform group"
+                      onClick={() => onSelectItem({ ...item, color: 'bg-rose-50', text: 'text-rose-500', icon: Apple })}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center transition-colors">
+                          <Apple size={22} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-slate-700">{item.title}</h4>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-200 flex items-center justify-center">
+                          <ChevronRight size={16} />
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -1266,10 +1257,10 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                 {days.map((d, i) => <span key={i} className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{d}</span>)}
               </div>
               <div className="grid grid-cols-7 gap-3">
-                {Array.from({ length: 31 }).map((_, i) => {
+                {Array.from({ length: 30 }).map((_, i) => {
                   const dayNum = i + 1;
-                  const isToday = dayNum === 17;
-                  const hasPlan = [1, 3, 5, 8, 10, 12, 15, 17, 19, 22, 24, 26, 29, 31].includes(dayNum);
+                  const isToday = dayNum === currentDayNum;
+                  const hasPlan = [1, 3, 5, 8, 10, 12, 15, 17, 19, 22, 24, 26, 29, 30].includes(dayNum);
                   
                   return (
                     <motion.div 
@@ -1279,7 +1270,7 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                       className={cn(
                         "aspect-square rounded-2xl flex flex-col items-center justify-center relative border transition-all duration-300 cursor-pointer",
                         selectedDate === dayNum ? "bg-slate-900 text-white border-slate-900 soft-shadow" : "bg-white border-warm-100 text-slate-500",
-                        dayNum === 17 && selectedDate !== 17 && "border-lavender-400",
+                        dayNum === currentDayNum && selectedDate !== currentDayNum && "border-lavender-400",
                         hasPlan && "hover:border-lavender-300"
                       )}
                     >
@@ -1308,48 +1299,48 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                             </div>
                           </div>
                         )}
-                        {log.exercise && (
-                          <div className="flex items-start gap-4">
+                        {log.exercise && log.exercise.map((ex: any, i: number) => (
+                          <div key={i} className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-sage-50 text-sage-500 flex items-center justify-center shrink-0">
                               <Dumbbell size={20} />
                             </div>
                             <div>
-                              <h5 className="font-semibold text-slate-800">{log.exercise.type}</h5>
-                              <p className="text-xs text-slate-400 mt-1">{log.exercise.duration} min · {log.exercise.intensity} intensity</p>
+                              <h5 className="font-semibold text-slate-800">{ex.type}</h5>
+                              <p className="text-xs text-slate-400 mt-1">{ex.duration} min · {ex.intensity} intensity</p>
                             </div>
                           </div>
-                        )}
-                        {log.nutrition && (
-                          <div className="flex items-start gap-4">
+                        ))}
+                        {log.nutrition && log.nutrition.map((nut: any, i: number) => (
+                          <div key={i} className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
                               <Utensils size={20} />
                             </div>
                             <div className="flex-1">
                               <div className="flex justify-between items-start">
-                                <h5 className="font-semibold text-slate-800">{log.nutrition.meal}</h5>
-                                {log.nutrition.weight && <span className="text-[9px] font-bold text-rose-400 uppercase tracking-widest">{log.nutrition.weight}</span>}
+                                <h5 className="font-semibold text-slate-800">{nut.meal}</h5>
+                                {nut.weight && <span className="text-[9px] font-bold text-rose-400 uppercase tracking-widest">{nut.weight}</span>}
                               </div>
                               <div className="flex flex-wrap gap-1 mt-2">
-                                {log.nutrition.tags.map(tag => (
+                                {nut.tags && nut.tags.map(tag => (
                                   <span key={tag} className="px-2 py-0.5 bg-rose-50 text-rose-500 text-[9px] font-bold rounded-full uppercase">{tag}</span>
                                 ))}
                               </div>
-                              {log.nutrition.image && (
+                              {nut.image && (
                                 <div className="mt-3 rounded-xl overflow-hidden border border-rose-100 aspect-video">
-                                  <img src={log.nutrition.image} alt="Meal" className="w-full h-full object-cover" />
+                                  <img src={nut.image} alt="Meal" className="w-full h-full object-cover" />
                                 </div>
                               )}
-                              {log.nutrition.aiAnalysis && (
+                              {nut.aiAnalysis && (
                                 <div className="mt-3 p-3 bg-lavender-50/50 rounded-xl border border-lavender-100">
                                   <p className="text-[10px] font-bold text-lavender-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                                     <Sparkles size={10} /> AI Insight
                                   </p>
-                                  <p className="text-xs text-slate-600 italic font-light leading-relaxed">"{log.nutrition.aiAnalysis}"</p>
+                                  <p className="text-xs text-slate-600 italic font-light leading-relaxed">"{nut.aiAnalysis}"</p>
                                 </div>
                               )}
                             </div>
                           </div>
-                        )}
+                        ))}
                       </Card>
                     ))}
                   </div>
@@ -1359,10 +1350,10 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
                       <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-lavender-500 soft-shadow">
                         <Sparkles size={20} />
                       </div>
-                      <h4 className="serif text-xl font-medium text-slate-800">{selectedDate === 17 ? "Today's Focus" : `Focus for March ${selectedDate}`}</h4>
+                      <h4 className="serif text-xl font-medium text-slate-800">{selectedDate === currentDayNum ? "Today's Focus" : `Focus for ${currentMonth} ${selectedDate}`}</h4>
                     </div>
                     <p className="text-sm text-slate-500 leading-relaxed font-light italic">
-                      {selectedDate === 17 
+                      {selectedDate === currentDayNum 
                         ? "Prioritizing bone health today with strength training. Your body will thank you for the extra support."
                         : "Focusing on restorative practices and mindful movement to maintain balance and energy levels."}
                     </p>
@@ -1374,74 +1365,84 @@ const PlanAndInsightsScreen = ({ logs }: { logs: DailyLog[] }) => {
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="space-y-4">
-            {INSIGHTS.map((insight, i) => (
-              <motion.div
-                key={insight.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <Card className={cn(
-                  "p-6 rounded-[2rem] soft-shadow border-warm-100",
-                  insight.type === 'positive' ? "bg-sage-50/30" : "bg-lavender-50/30"
-                )}>
-                  <div className="flex gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 soft-shadow",
-                      insight.type === 'positive' ? "bg-white text-sage-500" : "bg-white text-lavender-500"
-                    )}>
-                      {insight.type === 'positive' ? <Sparkles size={20} /> : <Activity size={20} />}
+          {view === 'insights' && INSIGHTS.length > 0 ? (
+            <div className="space-y-4">
+              {INSIGHTS.map((insight, i) => (
+                <motion.div
+                  key={insight.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Card className={cn(
+                    "p-6 rounded-[2rem] soft-shadow border-warm-100",
+                    insight.type === 'positive' ? "bg-sage-50/30" : "bg-lavender-50/30"
+                  )}>
+                    <div className="flex gap-4">
+                      <div className={cn(
+                        "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 soft-shadow",
+                        insight.type === 'positive' ? "bg-white text-sage-500" : "bg-white text-lavender-500"
+                      )}>
+                        {insight.type === 'positive' ? <Sparkles size={20} /> : <Activity size={20} />}
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed font-light italic">
+                        {insight.text}
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-700 leading-relaxed font-light italic">
-                      {insight.text}
-                    </p>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : view === 'insights' ? (
+            <Card className="p-8 bg-lavender-50/50 border-lavender-100 rounded-[2.5rem] flex flex-col items-center text-center">
+              <Sparkles size={32} className="text-lavender-300 mb-4" />
+              <h4 className="serif text-xl font-medium text-slate-800">Logging for Insights</h4>
+              <p className="text-sm text-slate-400 mt-2 font-light italic">Keep logging your symptoms and activities. I'll start sharing personalized insights once I see your patterns.</p>
+            </Card>
+          ) : null}
 
-          <Card className="p-8 rounded-[2.5rem] soft-shadow border-warm-100">
-            <h3 className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-8">Wellness Trends</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={CHART_DATA}>
-                  <defs>
-                    <linearGradient id="colorSleep" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#cbd5e1', fontWeight: 600}} />
-                  <YAxis hide />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', padding: '12px 20px' }}
-                  />
-                  <Area type="monotone" dataKey="sleep" stroke="#a78bfa" fillOpacity={1} fill="url(#colorSleep)" strokeWidth={4} />
-                  <Area type="monotone" dataKey="energy" stroke="#a3b1a3" fill="transparent" strokeWidth={2} strokeDasharray="8 8" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex justify-center gap-6 mt-6">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-lavender-400" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sleep</span>
+          {view === 'insights' && CHART_DATA.length > 0 && (
+            <Card className="p-8 rounded-[2.5rem] soft-shadow border-warm-100">
+              <h3 className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-8">Wellness Trends</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={CHART_DATA}>
+                    <defs>
+                      <linearGradient id="colorSleep" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#cbd5e1', fontWeight: 600}} />
+                    <YAxis hide />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', padding: '12px 20px' }}
+                    />
+                    <Area type="monotone" dataKey="sleep" stroke="#a78bfa" fillOpacity={1} fill="url(#colorSleep)" strokeWidth={4} />
+                    <Area type="monotone" dataKey="energy" stroke="#a3b1a3" fill="transparent" strokeWidth={2} strokeDasharray="8 8" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-sage-400" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Energy</span>
+              <div className="flex justify-center gap-6 mt-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-lavender-400" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sleep</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-slate-300" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Energy</span>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, setTrigger }: { preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, achievements: Achievement[], trigger: number, setTrigger: React.Dispatch<React.SetStateAction<number>> }) => {
+const ProgressScreen = ({ logs, preferences, setPreferences, achievements, trigger, setTrigger }: { logs: DailyLog[], preferences: UserPreferences, setPreferences: (p: UserPreferences) => void, achievements: Achievement[], trigger: number, setTrigger: React.Dispatch<React.SetStateAction<number>> }) => {
   const [activeCategory, setActiveCategory] = useState<'achievements' | 'avatar' | 'rewards'>('achievements');
 
   const accessories = [
@@ -1514,13 +1515,13 @@ const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, se
                 <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-sage-500 mb-4 soft-shadow">
                   <Zap size={24} />
                 </div>
-                <p className="text-3xl font-light text-slate-900 serif">7</p>
+                <p className="text-3xl font-light text-slate-900 serif">{logs.length > 0 ? 1 : 0}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Day Streak</p>
               </Card>
             </div>
 
             <section className="space-y-6">
-              <h3 className="serif text-2xl font-medium text-slate-800 px-2">Recent Milestones</h3>
+              <h3 className="serif text-2xl font-medium text-slate-800 px-2">Milestones</h3>
               <div className="space-y-4">
                 {achievements.map((achievement, i) => (
                   <motion.div
@@ -1630,12 +1631,12 @@ const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, se
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-medium">
                     <span>Progress</span>
-                    <span>8 / 10 days</span>
+                    <span>{logs.length > 0 ? 1 : 0} / 7 days</span>
                   </div>
                   <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: '80%' }}
+                      animate={{ width: logs.length > 0 ? `${(1/7)*100}%` : '0%' }}
                       className="h-full bg-white rounded-full"
                     />
                   </div>
@@ -1647,9 +1648,9 @@ const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, se
               <h3 className="serif text-2xl font-medium text-slate-800 px-2">Available Rewards</h3>
               <div className="space-y-4">
                 {[
-                  { title: 'Wellness Goodie Bag', type: 'Real-world', progress: 15, target: 30, icon: ShoppingBag, color: 'bg-rose-50 text-rose-500' },
-                  { title: 'Golden Crown Accessory', type: 'Virtual', progress: 5, target: 7, icon: Gem, color: 'bg-yellow-50 text-yellow-500' },
-                  { title: '1-Month Premium Subscription', type: 'Real-world', progress: 45, target: 90, icon: Zap, color: 'bg-blue-50 text-blue-500' },
+                  { title: 'Wellness Goodie Bag', type: 'Real-world', progress: 0, target: 30, icon: ShoppingBag, color: 'bg-rose-50 text-rose-500' },
+                  { title: 'Golden Crown Accessory', type: 'Virtual', progress: 0, target: 7, icon: Gem, color: 'bg-yellow-50 text-yellow-500' },
+                  { title: '1-Month Premium Subscription', type: 'Real-world', progress: 0, target: 90, icon: Zap, color: 'bg-blue-50 text-blue-500' },
                 ].map((reward, i) => (
                   <div key={i} className="bg-white p-6 rounded-[2.5rem] soft-shadow border border-warm-100 flex items-center gap-5">
                     <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", reward.color)}>
@@ -1679,13 +1680,17 @@ const ProgressScreen = ({ preferences, setPreferences, achievements, trigger, se
   );
 };
 
-const AskPeriHerScreen = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'assistant', content: "Hello Amber. I'm here to support you. Is there anything on your mind today?", timestamp: new Date() }
-  ]);
+const AskPeriHerScreen = ({ userName }: { userName: string }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMessages([
+      { id: '1', role: 'assistant', content: `Hello ${userName}. I'm here to support you. Is there anything on your mind today?`, timestamp: new Date() }
+    ]);
+  }, [userName]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1803,34 +1808,64 @@ const AuthScreen = ({ initialView, onClose }: { initialView: 'login' | 'signup',
     setIsLoading(true);
     setError(null);
 
+    if (!email.trim() || !password) {
+      setError("Please fill in both email and password.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      console.log(`Attempting ${view}...`, { email });
       if (view === 'login') {
         const { error: loginError } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
         if (loginError) throw loginError;
+        console.log('Login successful');
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
+        console.log('Calling supabase.auth.signUp...');
+        
+        // Add a safety timeout to avoid "forever processing" if the promise never resolves
+        const signUpPromise = supabase.auth.signUp({
+          email: email.trim(),
           password,
           options: {
             data: {
-              display_name: displayName || 'Amber', // Defaulting to Amber if empty
+              display_name: displayName.trim() || 'Guest',
             }
           }
         });
-        if (signUpError) throw signUpError;
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Sign up timed out. Please check your connection or try again.')), 15000)
+        );
+
+        const { data: signUpData, error: signUpError } = await Promise.race([signUpPromise, timeoutPromise]) as any;
+        
+        if (signUpError) {
+          console.error('Sign up error object:', signUpError);
+          throw signUpError;
+        }
+        
+        console.log('Sign up successful:', signUpData);
         setIsSuccess(true);
       }
     } catch (err: any) {
-      console.error('Auth Error:', err);
-      if (err.message?.toLowerCase().includes('rate limit')) {
-        setError("Rate limit exceeded. Please wait a moment or disable 'Confirm Email' in your Supabase Auth settings to bypass this during testing.");
+      console.error('Auth Exception:', err);
+      if (err.message?.toLowerCase().includes('rate flag') || err.message?.toLowerCase().includes('rate limit')) {
+        setError("Rate limit exceeded. Please wait a moment or check your email settings in Supabase.");
       } else {
-        setError(err.message);
+        setError(err.message || "An unexpected error occurred. Please try again.");
       }
     } finally {
+      console.log('Auth process finished, resetting loading state');
       setIsLoading(false);
     }
   };
@@ -1968,18 +2003,239 @@ const AuthScreen = ({ initialView, onClose }: { initialView: 'login' | 'signup',
   );
 };
 
+// --- Onboarding Wizard ---
+
+const OnboardingWizard = ({ onComplete }: { onComplete: (data: any) => void }) => {
+  const [step, setStep] = useState(1);
+  const [feelings, setFeelings] = useState({
+    sleep: 3,
+    energy: 3,
+    stress: 3,
+    mood: 3
+  });
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [timeAvailable, setTimeAvailable] = useState<number>(20);
+
+  const symptoms = [
+    'Brain fog', 'Anxiety', 'Night sweats', 
+    'Weight change', 'Dryness', 'Irregular cycles', 'Hot Flash'
+  ];
+
+  const goals = [
+    'More energy', 'Feel stronger', 'Better sleep', 
+    'Reduce stress', 'Body composition'
+  ];
+
+  const handleNext = () => {
+    if (step < 3) setStep(step + 1);
+    else onComplete({ feelings, selectedSymptoms, selectedGoals, timeAvailable });
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="space-y-10">
+            <h2 className="serif text-3xl text-slate-900 mb-8 leading-tight">How are you feeling lately?</h2>
+            
+            {[
+              { key: 'sleep', label: 'SLEEP', low: 'DEPRIVED', high: 'WELL-RESTED' },
+              { key: 'energy', label: 'ENERGY', low: 'LOW', high: 'HIGH' },
+              { key: 'stress', label: 'STRESS', low: 'CALM', high: 'HIGH STRESS' },
+              { key: 'mood', label: 'MOOD', low: 'LOW', high: 'GREAT' },
+            ].map(({ key, label, low, high }) => (
+              <div key={key} className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{label}</label>
+                  <span className="text-lavender-600 font-mono text-sm">{(feelings as any)[key]}/5</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="5" 
+                  value={(feelings as any)[key]}
+                  onChange={(e) => setFeelings(prev => ({ ...prev, [key]: parseInt(e.target.value) }))}
+                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-lavender-600"
+                />
+                <div className="flex justify-between text-[9px] font-bold text-slate-400 tracking-tight">
+                  <span>{low}</span>
+                  <span>{high}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-8">
+            <h2 className="serif text-3xl text-slate-900 mb-2 leading-tight">Any symptoms?</h2>
+            <p className="text-slate-500 text-sm font-medium mb-10">Select all that apply to you lately.</p>
+            
+            <div className="flex flex-wrap gap-2.5">
+              {symptoms.map(symptom => {
+                const isSelected = selectedSymptoms.includes(symptom);
+                return (
+                  <button
+                    key={symptom}
+                    onClick={() => {
+                      setSelectedSymptoms(prev => 
+                        isSelected ? prev.filter(s => s !== symptom) : [...prev, symptom]
+                      );
+                    }}
+                    className={cn(
+                      "px-5 py-2.5 rounded-full text-sm font-medium transition-all border",
+                      isSelected 
+                        ? "bg-lavender-600 border-lavender-600 text-white shadow-md shadow-lavender-200" 
+                        : "bg-white border-slate-200 text-slate-600 hover:border-lavender-300"
+                    )}
+                  >
+                    {symptom}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-8">
+            <h2 className="serif text-3xl text-slate-900 mb-8 leading-tight">What are your goals?</h2>
+            
+            <div className="flex flex-wrap gap-2.5 mb-12">
+              {goals.map(goal => {
+                const isSelected = selectedGoals.includes(goal);
+                return (
+                  <button
+                    key={goal}
+                    onClick={() => {
+                      setSelectedGoals(prev => 
+                        isSelected ? prev.filter(g => g !== goal) : [...prev, goal]
+                      );
+                    }}
+                    className={cn(
+                      "px-5 py-2.5 rounded-full text-sm font-medium transition-all border",
+                      isSelected 
+                        ? "bg-lavender-600 border-lavender-600 text-white shadow-md shadow-lavender-200" 
+                        : "bg-white border-slate-200 text-slate-600 hover:border-lavender-300 transition-all shadow-sm"
+                    )}
+                  >
+                    {goal}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="space-y-6">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">TIME AVAILABLE PER DAY</label>
+              <div className="grid grid-cols-3 gap-4">
+                {[10, 20, 30].map(time => (
+                  <button
+                    key={time}
+                    onClick={() => setTimeAvailable(time)}
+                    className={cn(
+                      "py-5 rounded-xl flex flex-col items-center justify-center transition-all border",
+                      timeAvailable === time
+                        ? "bg-lavender-100 border-lavender-500 text-lavender-700 shadow-md ring-1 ring-lavender-500/20"
+                        : "bg-white border-slate-200 text-slate-400"
+                    )}
+                  >
+                    <span className="text-lg font-bold mb-0.5">{time}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest">MIN</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-lavender-25 overflow-y-auto flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-lavender-100 via-transparent to-transparent">
+      <div className="w-full max-w-md bg-white rounded-[2.5rem] flex flex-col font-sans shadow-2xl shadow-lavender-200/50 border border-warm-100/50 overflow-hidden">
+        {/* Header */}
+        <div className="p-6 flex items-center justify-between border-b border-lavender-50">
+          <button 
+            onClick={() => step > 1 && setStep(step - 1)}
+            className={cn("p-2 text-slate-300 hover:text-slate-600 transition-colors", step === 1 && "opacity-0 pointer-events-none")}
+          >
+            <ArrowLeft size={18} />
+          </button>
+          
+          <div className="flex gap-2">
+            {[1, 2, 3].map(s => (
+              <div 
+                key={s} 
+                className={cn(
+                  "h-1 rounded-full transition-all duration-300",
+                  s === step ? "w-6 bg-lavender-500" : "w-1.5 bg-lavender-100"
+                )}
+              />
+            ))}
+          </div>
+          
+          <div className="w-8" />
+        </div>
+
+        <div className="flex-1 px-8 py-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="p-8 bg-warm-25/30 border-t border-lavender-50">
+          <button
+            onClick={handleNext}
+            className="w-full py-4 bg-lavender-500 text-white rounded-2xl font-bold text-base shadow-lg shadow-lavender-200/50 active:scale-95 transition-all"
+          >
+            {step === 3 ? 'Start your journey' : 'Continue'}
+          </button>
+          <p className="text-center text-[8px] text-slate-400 mt-6 tracking-[0.2em] font-bold uppercase">
+            NOT MEDICAL ADVICE. CONSULT YOUR PHYSICIAN.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  // 1. All useState hooks
   const [session, setSession] = useState<Session | null>(null);
   const [isStarted, setIsStarted] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'signup' | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'progress' | 'ask'>('home');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>(ACHIEVEMENTS);
   const [trigger, setTrigger] = useState(0);
+  const [onboardingData, setOnboardingData] = useState<any>(null);
+  const [selectedPlanItem, setSelectedPlanItem] = useState<any | null>(null);
+
+  // Derived state: calculate current symptoms including today's log
+  const todayStr = new Date().toISOString().split('T')[0];
+  const latestLogForToday = logs.find(l => l.date === todayStr);
+  const latestSymptom = latestLogForToday?.symptom;
+  const symptomsList = onboardingData?.selectedSymptoms || [];
+  const currentSymptoms = latestSymptom 
+    ? [...new Set([...symptomsList, latestSymptom])] 
+    : symptomsList;
+
   const [preferences, setPreferences] = useState<UserPreferences>({
     autoAdaptPlan: true,
     notificationsEnabled: true,
@@ -1990,33 +2246,46 @@ export default function App() {
     }
   });
 
+  // 2. All useEffect hooks
   useEffect(() => {
-    const initSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session) {
-        setIsStarted(true);
-        fetchHistoricalLogs(session.user.id);
-      }
-    };
-
-    initSession();
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (session) {
         setIsStarted(true);
         setAuthView(null);
-        fetchHistoricalLogs(session.user.id);
+        
+        const savedData = localStorage.getItem(`onboarding_data_${session.user.id}`);
+        if (savedData) {
+          setOnboardingData(JSON.parse(savedData));
+        }
+
+        if (event === 'SIGNED_IN') {
+          const onboardedKey = `onboarded_${session.user.id}`;
+          const hasOnboarded = localStorage.getItem(onboardedKey);
+          
+          if (!hasOnboarded) {
+            const existingLogs = await fetchHistoricalLogs(session.user.id);
+            if (existingLogs.length === 0) {
+              setShowOnboarding(true);
+            }
+          }
+        } else {
+          fetchHistoricalLogs(session.user.id);
+        }
+      } else {
+        setIsStarted(false);
+        setShowOnboarding(false);
+        setActiveTab('home');
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchHistoricalLogs = async (userId: string) => {
+  // 3. Helper functions
+  const fetchHistoricalLogs = async (userId: string): Promise<DailyLog[]> => {
     try {
       const { data, error } = await supabase
         .from('symptom_logs')
@@ -2026,87 +2295,171 @@ export default function App() {
 
       if (error) throw error;
 
-      if (data) {
-        const mappedLogs: DailyLog[] = data.map((item: any) => ({
+      const mappedLogs: DailyLog[] = (data || []).map((item: any) => {
+        let exercise = undefined;
+        if (item.activity_log) {
+          try {
+            const parsed = JSON.parse(item.activity_log);
+            exercise = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            exercise = [{ type: item.activity_log, duration: 20, intensity: 'medium' }];
+          }
+        }
+
+        let nutrition = undefined;
+        if (item.diet_log) {
+          try {
+            const parsed = JSON.parse(item.diet_log);
+            nutrition = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            nutrition = [{ meal: item.diet_log, tags: [] }];
+          }
+        }
+
+        return {
           id: item.id || item.created_at,
           date: item.log_date,
           timestamp: new Date(item.log_date).getTime(),
-          symptom: item.symptom?.type || item.symptom,
+          symptom: typeof item.symptom === 'object' ? item.symptom?.type : item.symptom,
           mood: item.mood_score?.toString(),
-          exercise: item.activity_log ? JSON.parse(item.activity_log) : undefined,
-          nutrition: item.diet_log ? JSON.parse(item.diet_log) : undefined,
-        }));
-        setLogs(mappedLogs);
-      }
+          exercise,
+          nutrition,
+        };
+      });
+      setLogs(mappedLogs);
+      return mappedLogs;
     } catch (err) {
       console.error('Error fetching logs:', err);
+      return [];
     }
   };
 
-  const handleLog = async (log: Partial<DailyLog>) => {
+  const handleLog = async (logData: Partial<DailyLog>) => {
     setSaveStatus('saving');
-    const newLog: DailyLog = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-      timestamp: Date.now(),
-      ...log
-    };
-    setLogs(prev => [newLog, ...prev]);
+    
+    // Normalize log data
+    const log: any = { ...logData };
+    if ((logData as any).type === 'exercise' && (logData as any).detail) {
+      log.exercise = [{ type: (logData as any).detail, duration: 20, intensity: 'medium' }];
+    } else if ((logData as any).type === 'nutrition' && (logData as any).detail) {
+      log.nutrition = [{ meal: (logData as any).detail, tags: ['Planned'] }];
+    } else {
+      if (logData.exercise && !Array.isArray(logData.exercise)) {
+        log.exercise = [logData.exercise];
+      }
+      if (logData.nutrition && !Array.isArray(logData.nutrition)) {
+        log.nutrition = [logData.nutrition];
+      }
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Optimistic update
+    setLogs(prev => {
+      const existingTodayIndex = prev.findIndex(l => l.date === today);
+      if (existingTodayIndex !== -1) {
+        const updated = [...prev];
+        const existing = updated[existingTodayIndex];
+        
+        const merged: DailyLog = { ...existing };
+        if (log.exercise) {
+          merged.exercise = [...(existing.exercise || []), ...log.exercise];
+        }
+        if (log.nutrition) {
+          merged.nutrition = [...(existing.nutrition || []), ...log.nutrition];
+        }
+        if (log.symptom) merged.symptom = log.symptom;
+        if (log.mood) merged.mood = log.mood;
+        
+        updated[existingTodayIndex] = merged;
+        return updated;
+      }
+      
+      const newLog: DailyLog = {
+        id: Date.now().toString(),
+        date: today,
+        timestamp: Date.now(),
+        ...log
+      };
+      return [newLog, ...prev];
+    });
+
     setTrigger(prev => prev + 1);
     
     // Save to Supabase if session exists
     if (session?.user) {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        
         // 1. Fetch today's existing log to merge
         const { data: existingData } = await supabase
           .from('symptom_logs')
           .select('*')
           .eq('user_id', session.user.id)
           .eq('log_date', today)
-          .single();
+          .maybeSingle();
 
         // 2. Prepare the payload (merging with existing if found)
-        const dbLog = {
+        const dbLog: any = {
           user_id: session.user.id,
           log_date: today,
-          // symptom is NOT NULL in your schema, so we MUST provide at least an empty object
           symptom: log.symptom ? { type: log.symptom } : (existingData?.symptom || {}), 
-          severity: 1, 
-          diet_log: log.nutrition ? JSON.stringify(log.nutrition) : (existingData?.diet_log || null),
-          activity_log: log.exercise ? JSON.stringify(log.exercise) : (existingData?.activity_log || null),
-          mood_score: log.mood ? parseInt(log.mood) || 5 : (existingData?.mood_score || 5),
-          energy_score: 5,
+          severity: existingData?.severity || 1, 
+          mood_score: log.mood ? parseInt(log.mood) : (existingData?.mood_score || 5),
+          energy_score: (log as any).energy ? parseInt((log as any).energy) : (existingData?.energy_score || 5),
           created_at: existingData?.created_at || new Date().toISOString(),
         };
+
+        // Merge activity_log
+        let currentExercises: any[] = [];
+        const latestLocalLog = logs.find(l => l.date === today);
+        
+        if (existingData?.activity_log) {
+          try {
+            const parsed = JSON.parse(existingData.activity_log);
+            currentExercises = Array.isArray(parsed) ? parsed : [parsed];
+          } catch(e) { }
+        } else if (latestLocalLog?.exercise) {
+          currentExercises = latestLocalLog.exercise;
+        }
+
+        if (log.exercise) {
+          // De-duplicate if needed (same type logged twice) - optional, for now just append
+          dbLog.activity_log = JSON.stringify([...currentExercises, ...log.exercise]);
+        } else {
+          dbLog.activity_log = existingData?.activity_log || (latestLocalLog?.exercise ? JSON.stringify(latestLocalLog.exercise) : null);
+        }
+
+        // Merge diet_log
+        let currentMeals: any[] = [];
+        if (existingData?.diet_log) {
+          try {
+            const parsed = JSON.parse(existingData.diet_log);
+            currentMeals = Array.isArray(parsed) ? parsed : [parsed];
+          } catch(e) { }
+        } else if (latestLocalLog?.nutrition) {
+          currentMeals = latestLocalLog.nutrition;
+        }
+
+        if (log.nutrition) {
+          dbLog.diet_log = JSON.stringify([...currentMeals, ...log.nutrition]);
+        } else {
+          dbLog.diet_log = existingData?.diet_log || (latestLocalLog?.nutrition ? JSON.stringify(latestLocalLog.nutrition) : null);
+        }
 
         // 3. Upsert into Supabase
         const response = await supabase
           .from('symptom_logs')
           .upsert(dbLog, { onConflict: 'user_id,log_date' });
         
-        if (response.error) {
-          console.error('Supabase DB Error:', {
-            message: response.error.message,
-            details: response.error.details,
-            hint: response.error.hint,
-            code: response.error.code,
-            status: response.status,
-            statusText: response.statusText
-          });
-          throw response.error;
-        }
+        if (response.error) throw response.error;
+        
+        // Re-fetch to ensure sync after save
+        await fetchHistoricalLogs(session.user.id);
         
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (err: any) {
         console.error('Detailed Save Error:', err);
         setSaveStatus('error');
-        // Check for common Supabase/RLS issues
-        if (err.message?.includes('policy') || err.code === '42501') {
-          console.warn("RLS Policy Check: Go to Supabase > Authentication > Policies and ensure you have an 'INSERT/UPDATE' policy for authenticated users on the symptom_logs table.");
-        }
       }
     } else {
       setSaveStatus('idle');
@@ -2135,9 +2488,157 @@ export default function App() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsStarted(false);
+    try {
+      // Clear wizard status for this specific user if needed
+      if (session?.user) {
+        localStorage.removeItem(`onboarded_${session.user.id}`);
+      }
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      // Clear all local states to ensure a clean slate
+      setSession(null);
+      setIsStarted(false);
+      setShowOnboarding(false);
+      setActiveTab('home');
+      setLogs([]);
+      setOnboardingData(null);
+      setAuthView(null);
+    }
   };
+
+  const handleOnboardingComplete = (data: any) => {
+    setOnboardingData(data);
+    if (session?.user) {
+      localStorage.setItem(`onboarded_${session.user.id}`, 'true');
+      localStorage.setItem(`onboarding_data_${session.user.id}`, JSON.stringify(data));
+    }
+    setShowOnboarding(false);
+  };
+
+  const capitalize = (str: string) => {
+    if (!str) return '';
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
+
+  const getDynamicPlan = () => {
+    const time = onboardingData?.timeAvailable || 20;
+    const goals = onboardingData?.selectedGoals || [];
+    
+    const hasSymptom = (search: string) => {
+      const lowerSearch = search.toLowerCase();
+      return currentSymptoms.some((s: any) => s?.toString().toLowerCase().includes(lowerSearch));
+    };
+
+    const isTired = hasSymptom('tired') || hasSymptom('fatigue') || hasSymptom('energy');
+    const isAnxious = hasSymptom('anxious') || hasSymptom('stress') || hasSymptom('mood');
+    const isBrainFog = hasSymptom('brain fog') || hasSymptom('focus');
+    const isInsomnia = hasSymptom('insomnia') || hasSymptom('sleep');
+
+    return [
+      {
+        id: '1',
+        type: 'exercise',
+        title: isTired ? 'Restorative Flow' : (goals.includes('Feel stronger') ? 'Resistance Protocol' : 'Dynamic Flow'),
+        description: isTired 
+          ? 'Gentle, supportive movements to restore energy and reduce physical tension without exhaustion.' 
+          : (goals.includes('Feel stronger') ? 'Targeted strength training to boost metabolism and maintain bone density.' : 'Fluid movements to improve mobility and reduce cortisol levels.'),
+        icon: isTired ? Wind : Dumbbell,
+        color: isTired ? 'bg-blue-50' : 'bg-sage-50',
+        text: isTired ? 'text-blue-500' : 'text-sage-500',
+        duration: `${time} MIN`,
+        intensity: isTired || isInsomnia ? 'Low' : 'Moderate',
+        focus: isAnxious ? 'Nervous System' : 'Core & Strength',
+        workoutSteps: isTired
+          ? [
+              'Supported Child\'s Pose: 3 mins to ground the nervous system.',
+              'Supine Twist: 2 mins each side to release spinal tension.',
+              'Legs up the Wall: 5 mins for lymphatic drainage and rest.',
+              'Gentle Hip Circles: 2 mins to move energy.',
+              'Box Breathing: 3 mins to reset cortisol.'
+            ]
+          : (goals.includes('Feel stronger') 
+            ? [
+                'Bodyweight Squats: 3 sets of 12 reps.',
+                'Incline Push-ups: 3 sets of 10 reps.',
+                'Glute Bridges: 3 sets of 15 reps.',
+                'Plank: 45 seconds.',
+                'Cool down: 5 mins of static stretching.'
+              ]
+            : [
+                'Cat-Cow Stretch: 10 slow rounds.',
+                'Downward Facing Dog: 5 deep breaths.',
+                'Sun Salutations: 4 meditative rounds.',
+                'Child\'s Pose: 2 mins focus on breathing.',
+                'Savasana: 5 mins total stillness.'
+              ]),
+        tutorialLink: 'https://www.youtube.com/results?search_query=perimenopause+yoga'
+      },
+      {
+        id: '2',
+        type: 'mindfulness',
+        title: isBrainFog ? 'Cognitive Reset' : (isAnxious ? 'Calming Ground' : 'Mindful Breathing'),
+        description: 'Guided practice to ground your attention, reduce mental clutter, and balance the nervous system.',
+        icon: Wind,
+        color: 'bg-blue-50',
+        text: 'text-blue-500',
+        duration: '10 MIN',
+        workoutSteps: isAnxious 
+          ? [
+              'Find a quiet space and sit upright.',
+              'Place one hand on your heart and one on your belly.',
+              '4-7-8 Breathing: Inhale 4, hold 7, exhale 8 (5 rounds).',
+              'Focus on the physical sensation of the breath.',
+              'Scan your body for tension and exhale it out.'
+            ]
+          : [
+              'Sit comfortably with a tall spine.',
+              'Close your eyes or soften your gaze.',
+              'Inhale for 4, hold for 4, exhale for 6.',
+              'Notice any tension in your jaw and release it.',
+              'Gentle neck rolls to finish.'
+            ],
+        tutorialLink: 'https://www.youtube.com/results?search_query=perimenopause+meditation'
+      },
+      {
+        id: '3',
+        type: 'nutrition',
+        title: goals.includes('Better sleep') || isInsomnia ? 'Magnesium Dinner' : 'Anti-Inflammatory Bowl',
+        description: 'Nutrient-dense meal designed to support hormonal balance and stable blood sugar.',
+        icon: Apple,
+        color: 'bg-rose-50',
+        text: 'text-rose-500',
+        duration: '25 MIN',
+        ingredients: goals.includes('Better sleep') || isInsomnia
+          ? ['200g Wild Salmon fillet', '2 cups baby spinach or kale', '1/2 cup roasted pumpkin seeds', '1/2 ripe avocado', 'Dressing: Lemon juice, olive oil, sea salt']
+          : ['150g Grilled Tofu or Chicken breast', '1 cup cooked quinoa', '2 cups steamed broccoli florets', '2 tbsp Kimchi', 'Turmeric-Tahini dressing'],
+        recipeSteps: goals.includes('Better sleep') || isInsomnia
+          ? [
+              'Season salmon with salt and lemon. Pan-sear for 4 mins per side.',
+              'Lightly steam the leafy greens for 2 mins until wilted.',
+              'Toast pumpkin seeds in a dry pan for 2 mins until fragrant.',
+              'Slice the avocado and assemble ingredients in a large bowl.'
+            ]
+          : [
+              'Cook quinoa according to package instructions.',
+              'Steam broccoli for 4-5 mins until tender-crisp.',
+              'Grill protein of choice with minimal oil.',
+              'Assemble bowl with quinoa, broccoli, protein, and kimchi.',
+              'Whisk tahini, turmeric, and lemon for the dressing.'
+            ]
+      }
+    ];
+  };
+
+  const rawName = session?.user?.user_metadata?.display_name || 'Friend';
+  const userName = capitalize(rawName);
+
+  if (showOnboarding) {
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-warm-50 relative overflow-x-hidden">
@@ -2159,23 +2660,25 @@ export default function App() {
           >
             {activeTab === 'home' && (
               <HomeScreen 
-                userName={session?.user?.user_metadata?.display_name || 'Amber'}
+                userName={userName}
                 saveStatus={saveStatus}
                 onSymptomSelect={(s) => {
                   setHasCheckedIn(true);
                   handleLog({ symptom: s });
                 }} 
-                onPlanItemClick={() => setActiveTab('plan')}
+                onPlanItemClick={(item) => setSelectedPlanItem(item)}
                 preferences={preferences}
                 setPreferences={setPreferences}
                 onLog={handleLog}
                 onLogout={handleLogout}
+                customPlan={getDynamicPlan()}
               />
             )}
-            {activeTab === 'plan' && <PlanAndInsightsScreen logs={logs} />}
-            {activeTab === 'ask' && <AskPeriHerScreen />}
+            {activeTab === 'plan' && <PlanAndInsightsScreen logs={logs} customPlan={getDynamicPlan()} onSelectItem={setSelectedPlanItem} />}
+            {activeTab === 'ask' && <AskPeriHerScreen userName={userName} />}
             {activeTab === 'progress' && (
               <ProgressScreen 
+                logs={logs}
                 preferences={preferences} 
                 setPreferences={setPreferences}
                 achievements={achievements}
@@ -2215,6 +2718,185 @@ export default function App() {
           isSpecial
         />
       </nav>
+
+      <AnimatePresence>
+        {selectedPlanItem && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          >
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedPlanItem(null)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            
+            <div className="relative w-full max-w-lg bg-warm-50 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-white/20">
+              {/* Header with Close Button */}
+              <div className="sticky top-0 z-20 bg-warm-50/90 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-warm-100 shrink-0">
+                <button 
+                  id="close-plan-detail"
+                  onClick={() => setSelectedPlanItem(null)}
+                  className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-lavender-500 hover:bg-lavender-50 transition-all soft-shadow"
+                >
+                  <ChevronRight size={20} className="rotate-180" />
+                </button>
+                <div className="text-center">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-lavender-400">Personalized Plan</p>
+                  <h3 className="serif text-xl font-medium text-slate-800">Activity Insight</h3>
+                </div>
+                <div className="w-10" />
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-10 pb-24">
+                <section className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-warm-100 overflow-hidden relative">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-warm-50/50 rounded-full -translate-y-1/2 translate-x-1/2" />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-5 mb-8">
+                      <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-lg", selectedPlanItem.color, selectedPlanItem.text)}>
+                        <selectedPlanItem.icon size={32} />
+                      </div>
+                      <div>
+                        <p className={cn("text-[9px] font-black uppercase tracking-[0.2em] mb-1", selectedPlanItem.text)}>{selectedPlanItem.type}</p>
+                        <h4 className="serif text-3xl font-medium text-slate-800">{selectedPlanItem.title}</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 mb-8">
+                      <div className="px-4 py-2 bg-warm-50 rounded-full border border-warm-100 flex items-center gap-2">
+                        <Clock size={14} className="text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{selectedPlanItem.duration}</span>
+                      </div>
+                      {selectedPlanItem.intensity && (
+                        <div className="px-4 py-2 bg-warm-50 rounded-full border border-warm-100 flex items-center gap-2">
+                          <Activity size={14} className="text-slate-400" />
+                          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{selectedPlanItem.intensity} INTENSITY</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-slate-500 leading-relaxed font-light mb-8 text-sm">
+                      {selectedPlanItem.description}
+                    </p>
+                    
+                    <div className="p-6 bg-lavender-50/30 rounded-[2rem] border border-lavender-100/50 mb-10">
+                      <h5 className="text-[10px] font-bold text-lavender-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Sparkles size={14} /> AI Optimization
+                      </h5>
+                      <p className="text-xs text-slate-600 font-light leading-relaxed">
+                        This activity was dynamically adjusted based on your reported <strong>{currentSymptoms.join(', ')}</strong> symptoms. We've prioritized {selectedPlanItem.focus || 'balance'} to support your cortisol levels.
+                      </p>
+                    </div>
+
+                    <div className="space-y-8">
+                      {selectedPlanItem.workoutSteps && (
+                        <div className="space-y-5">
+                          <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                             Guiding Steps
+                          </h5>
+                          <div className="space-y-4">
+                            {selectedPlanItem.workoutSteps.map((step: string, i: number) => (
+                              <div key={i} className="flex gap-4 group">
+                                <span className={cn("w-6 h-6 rounded-full text-[10px] flex items-center justify-center shrink-0 font-bold transition-colors", selectedPlanItem.color, selectedPlanItem.text)}>{i+1}</span>
+                                <p className="text-sm text-slate-600 leading-relaxed font-light group-hover:text-slate-900 transition-colors">{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                          {selectedPlanItem.tutorialLink && (
+                            <a href={selectedPlanItem.tutorialLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-bold text-lavender-600 mt-4 hover:bg-lavender-50 px-4 py-2 rounded-full transition-colors">
+                              <Sparkles size={14} /> See Video Tutorial
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {selectedPlanItem.ingredients && (
+                        <div className="space-y-6">
+                           <div>
+                            <h5 className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                              <Utensils size={14} /> Ingredients
+                            </h5>
+                            <ul className="grid grid-cols-1 gap-2">
+                              {selectedPlanItem.ingredients.map((ing: string, i: number) => (
+                                <li key={i} className="flex items-center gap-2 text-xs text-slate-600 font-light">
+                                  <div className="w-1 h-1 rounded-full bg-rose-200" />
+                                  {ing}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-3">Preparation</h5>
+                            <div className="space-y-4">
+                              {selectedPlanItem.recipeSteps.map((step: string, i: number) => (
+                                <div key={i} className="flex gap-4">
+                                  <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-600 text-[10px] flex items-center justify-center shrink-0 font-bold">{i+1}</span>
+                                  <p className="text-sm text-slate-600 leading-relaxed font-light">{step}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <button 
+                      id="log-plan-action"
+                      onClick={() => {
+                        handleLog({ 
+                          type: selectedPlanItem.type === 'nutrition' ? 'nutrition' : 'exercise',
+                          detail: selectedPlanItem.title 
+                        } as any);
+                        setSelectedPlanItem(null);
+                      }}
+                      className="w-full mt-10 bg-lavender-600 text-white py-5 rounded-3xl font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-lavender-200 hover:bg-lavender-700 transition-all hover:scale-[1.02] active:scale-95"
+                    >
+                      <Plus size={20} /> Log this {selectedPlanItem.type === 'nutrition' ? 'Meal' : 'Activity'}
+                    </button>
+                  </div>
+                </section>
+
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="serif text-2xl font-medium text-slate-800">Other Recommendations</h3>
+                    <span className="text-[10px] font-bold text-lavender-400 uppercase tracking-[0.2em]">Full List</span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {WEEKLY_PLAN.filter(i => i.id !== selectedPlanItem.id).slice(0, 3).map(item => (
+                      <div key={item.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-warm-100 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-warm-50 flex items-center justify-center text-slate-400">
+                          <CheckCircle2 size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">{item.type}</p>
+                          <p className="font-medium text-slate-700">{item.title}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setSelectedPlanItem(null);
+                    setActiveTab('plan');
+                  }}
+                  className="w-full bg-slate-900 text-white py-5 rounded-2xl font-medium soft-shadow hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                >
+                  View My Full Calendar <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
